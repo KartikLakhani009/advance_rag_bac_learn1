@@ -1,0 +1,18 @@
+{
+  "pages": [
+    { "page": 14, "printedPage": "12", "note": "GPO By the Numbers FY 2018 infographic (label/value pairs)", "saveAsset": true },
+    { "page": 26, "printedPage": "24", "note": "financial summary tables", "saveAsset": false },
+    { "page": 27, "printedPage": "25", "note": "financial summary tables", "saveAsset": false },
+    { "page": 40, "printedPage": "9", "note": "MD&A chart: accounts receivable", "saveAsset": true },
+    { "page": 41, "printedPage": "10", "note": "MD&A chart: capital investments", "saveAsset": true },
+    { "page": 42, "printedPage": "11", "note": "MD&A charts: deferred revenues; workers' compensation liability", "saveAsset": true },
+    { "page": 43, "printedPage": "12", "note": "MD&A chart: operating revenues", "saveAsset": true },
+    { "page": 45, "printedPage": "14", "note": "MD&A chart: on-time delivery of Congressional Record", "saveAsset": true },
+    { "page": 46, "printedPage": "15", "note": "MD&A charts: on-time delivery of procured printing; FDsys searches", "saveAsset": true },
+    { "page": 47, "printedPage": "16", "note": "MD&A charts: FDsys/govinfo retrievals; passports produced", "saveAsset": true },
+    { "page": 48, "printedPage": "17", "note": "MD&A chart: smartcards produced", "saveAsset": true },
+    { "page": 58, "printedPage": "27", "note": "balance sheet", "saveAsset": false },
+    { "page": 59, "printedPage": "28", "note": "statement of revenues, expenses and changes in retained earnings", "saveAsset": false },
+    { "page": 60, "printedPage": "29", "note": "statement of cash flows", "saveAsset": false }
+  ]
+}

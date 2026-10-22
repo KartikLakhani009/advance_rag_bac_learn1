@@ -1,0 +1,7 @@
+.env
+node_modules
+.chroma/
+data/processed/
+data/assets/
+reports/*.md
+!reports/.gitkeep

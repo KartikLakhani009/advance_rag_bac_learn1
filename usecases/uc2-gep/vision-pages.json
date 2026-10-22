@@ -1,0 +1,30 @@
+{
+  "pages": [
+    { "page": 26, "printedPage": "4", "note": "Table 1.1 Real GDP (global forecasts)", "saveAsset": false },
+    { "page": 83, "printedPage": "61", "note": "East Asia and Pacific summary and country forecast tables", "saveAsset": false },
+    { "page": 86, "printedPage": "64", "note": "Europe and Central Asia summary forecast table", "saveAsset": false },
+    { "page": 87, "printedPage": "65", "note": "Europe and Central Asia country forecast table", "saveAsset": false },
+    { "page": 90, "printedPage": "68", "note": "Latin America and the Caribbean summary forecast table", "saveAsset": false },
+    { "page": 91, "printedPage": "69", "note": "Latin America and the Caribbean country forecast table", "saveAsset": false },
+    {
+      "page": 94,
+      "printedPage": "72",
+      "note": "Middle East, North Africa, Afghanistan, and Pakistan summary forecast table",
+      "saveAsset": false
+    },
+    {
+      "page": 95,
+      "printedPage": "73",
+      "note": "Middle East, North Africa, Afghanistan, and Pakistan country forecast table",
+      "saveAsset": false
+    },
+    {
+      "page": 98,
+      "printedPage": "76",
+      "note": "Table 2.10 South Asia economy forecasts (summary and country, incl. India fiscal years)",
+      "saveAsset": false
+    },
+    { "page": 101, "printedPage": "79", "note": "Sub-Saharan Africa summary forecast table", "saveAsset": false },
+    { "page": 102, "printedPage": "80", "note": "Sub-Saharan Africa country forecast table", "saveAsset": false }
+  ]
+}

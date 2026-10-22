@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chroma Viewer</title>
+<style>
+:root{--bg:#fafaf8;--panel:#fff;--ink:#1c1c1a;--mute:#6b6b66;--line:#e4e4de;--accent:#2a6ef5;--hit:#fff4d6;
+--c0:#2a6ef5;--c1:#e8590c;--c2:#2f9e44;--c3:#ae3ec9;--c4:#f08c00;--c5:#0c8599;--c6:#c2255c;--c7:#5c940d;--c8:#6741d9;--c9:#868e96}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#141413;--panel:#1d1d1b;--ink:#ececE8;--mute:#9a9a92;--line:#33332f;--accent:#6c9bff;--hit:#3b3416}}
+:root[data-theme=dark]{--bg:#141413;--panel:#1d1d1b;--ink:#ececE8;--mute:#9a9a92;--line:#33332f;--accent:#6c9bff;--hit:#3b3416}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}
+header{display:flex;gap:12px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--panel);position:sticky;top:0;z-index:5;flex-wrap:wrap}
+h1{font-size:16px;margin:0}select,input,button{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+button{cursor:pointer}button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tabs{display:flex;gap:6px}.spacer{flex:1}main{padding:16px;max-width:1400px;margin:auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.card .n{font-size:26px;font-weight:600}.card .l{color:var(--mute);font-size:12px}
+.bars .row{display:grid;grid-template-columns:150px 1fr 56px;gap:8px;align-items:center;margin:4px 0;font-size:13px}
+.bar{height:14px;background:var(--accent);border-radius:3px;min-width:2px}
+table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line);vertical-align:top}th{font-size:12px;color:var(--mute);position:sticky;top:50px;background:var(--panel)}
+tr.chunk{cursor:pointer}tr.chunk:hover{background:var(--hit)}td.t{max-width:560px;color:var(--mute)}
+.pill{display:inline-block;padding:1px 8px;border-radius:99px;font-size:12px;background:var(--line)}
+.filters{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}.filters input{flex:1;min-width:200px}
+#detail{position:fixed;right:0;top:0;bottom:0;width:min(560px,100%);background:var(--panel);border-left:1px solid var(--line);padding:16px;overflow:auto;display:none;z-index:10;box-shadow:-8px 0 24px #0003}
+#detail pre{white-space:pre-wrap;background:var(--bg);padding:10px;border-radius:8px;border:1px solid var(--line);font:13px/1.5 ui-monospace,Menlo,monospace}
+#detail img{max-width:100%;border:1px solid var(--line);border-radius:8px;margin-top:8px}
+canvas{width:100%;height:600px;background:var(--panel);border:1px solid var(--line);border-radius:10px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin:8px 0;font-size:13px}.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px}
+#tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--bg);padding:6px 9px;border-radius:6px;font-size:12px;max-width:340px;display:none;z-index:20}
+.assets{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}.assets img{width:100%;border-radius:8px;border:1px solid var(--line)}
+.mute{color:var(--mute)}.err{color:#c92a2a}
+</style>
+</head>
+<body>
+<header>
+  <h1>Chroma Viewer</h1>
+  <select id="col" aria-label="Collection"></select>
+  <div class="tabs" id="tabs"></div>
+  <div class="spacer"></div>
+  <span class="mute" id="status"></span>
+  <button id="theme" title="Toggle theme">◐</button>
+</header>
+<main id="main"><p class="mute">Loading collections from Chroma…</p></main>
+<aside id="detail"></aside>
+<div id="tip"></div>
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const COLORS = ["--c0","--c1","--c2","--c3","--c4","--c5","--c6","--c7","--c8","--c9"];
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+let cols = [], rows = [], proj = null, manifest = { assets: [] }, tab = "overview", cur = "";
+const TABS = [["overview","Overview"],["chunks","Chunks"],["map","Embedding map"],["assets","Assets"]];
+
+$("#theme").onclick = () => { const r = document.documentElement; r.dataset.theme = (r.dataset.theme || (matchMedia("(prefers-color-scheme:dark)").matches ? "dark" : "light")) === "dark" ? "light" : "dark"; render(); };
+$("#tabs").innerHTML = TABS.map(([k, l]) => `<button data-k="${k}">${l}</button>`).join("");
+$("#tabs").onclick = (e) => { if (e.target.dataset.k) { tab = e.target.dataset.k; render(); } };
+
+async function api(p) { const r = await fetch(p); const j = await r.json(); if (j.error) throw new Error(j.error); return j; }
+
+async function init() {
+  try { cols = await api("/api/collections"); } catch (e) { $("#main").innerHTML = `<p class="err">Cannot read Chroma: ${esc(e.message)}. Start it with <code>npm run chroma</code>.</p>`; return; }
+  $("#col").innerHTML = cols.map((c) => `<option value="${c.name}">${c.name} (${c.count})</option>`).join("");
+  $("#col").onchange = load;
+  if (!cols.length) { $("#main").innerHTML = '<p class="mute">No collections yet. Run an ingest first.</p>'; return; }
+  await load();
+}
+async function load() {
+  cur = $("#col").value; proj = null; $("#status").textContent = "loading…";
+  rows = await api("/api/chunks?collection=" + encodeURIComponent(cur));
+  manifest = await api("/api/manifest?uc=" + cur.split("__")[0]);
+  $("#status").textContent = `${rows.length} stored records`;
+  render();
+}
+const meta = (r) => r.chroma || {};
+const count = (f) => { const m = {}; rows.forEach((r) => { const k = f(r); m[k] = (m[k] || 0) + 1; }); return Object.entries(m).sort((a, b) => b[1] - a[1]); };
+function bars(entries) { const max = Math.max(...entries.map((e) => e[1]), 1); return `<div class="bars">${entries.map(([k, v]) => `<div class="row"><span>${esc(k)}</span><div class="bar" style="width:${(100 * v) / max}%"></div><span class="mute">${v}</span></div>`).join("")}</div>`; }
+
+function render() {
+  document.querySelectorAll("#tabs button").forEach((b) => b.classList.toggle("on", b.dataset.k === tab));
+  ({ overview, chunks, map, assets })[tab]();
+}
+
+function overview() {
+  const tok = rows.map((r) => r.chunk?.tokens || Math.round(r.document.length / 4));
+  const sum = tok.reduce((a, b) => a + b, 0);
+  const pages = count((r) => meta(r).page ?? "?").sort((a, b) => Number(a[0]) - Number(b[0]));
+  const regions = count((r) => meta(r).region || "(none)");
+  const withHeading = rows.filter((r) => r.chunk?.headingPath).length;
+  $("#main").innerHTML = `
+  <div class="grid">
+    <div class="card"><div class="n">${rows.length}</div><div class="l">records in Chroma collection <b>${esc(cur)}</b></div></div>
+    <div class="card"><div class="n">${sum.toLocaleString()}</div><div class="l">≈ tokens stored (avg ${Math.round(sum / (rows.length || 1))}/chunk)</div></div>
+    <div class="card"><div class="n">${new Set(rows.map((r) => meta(r).page)).size}</div><div class="l">distinct PDF pages covered</div></div>
+    <div class="card"><div class="n">${withHeading}</div><div class="l">chunks with a heading path (embedded with the text)</div></div>
+  </div>
+  <div class="card"><h3>Chunks by kind</h3>${bars(count((r) => meta(r).kind || "?"))}</div><br>
+  ${regions.length > 1 ? `<div class="card"><h3>Chunks by region</h3>${bars(regions)}</div><br>` : ""}
+  <div class="card"><h3>Chunks by starting PDF page</h3>${bars(pages.map(([k, v]) => ["p. " + k, v]))}</div>
+  <p class="mute">What Chroma stores per record: <code>id</code>, <code>document</code> (chunk text), <code>embedding</code> (vector), <code>metadata</code> (kind, page, pageEnd${rows.some((r) => meta(r).region) ? ", region, chapter" : ""}). Printed pages, heading path and asset links live in the chunk store beside it.</p>`;
+}
+
+function chunks() {
+  const kinds = [...new Set(rows.map((r) => meta(r).kind))];
+  $("#main").innerHTML = `<div class="filters">
+    <input id="q" placeholder="Search chunk text, id, heading path…">
+    <select id="fk"><option value="">all kinds</option>${kinds.map((k) => `<option>${k}</option>`).join("")}</select>
+    <input id="fp" type="number" min="1" placeholder="PDF page" style="width:110px">
+    <span class="mute" id="cnt"></span></div>
+    <table><thead><tr><th>id</th><th>kind</th><th>PDF</th><th>printed</th><th>heading path</th><th>text</th></tr></thead><tbody id="tb"></tbody></table>`;
+  const draw = () => {
+    const q = $("#q").value.toLowerCase(), k = $("#fk").value, p = Number($("#fp").value) || 0;
+    const sel = rows.filter((r) => (!k || meta(r).kind === k) && (!p || (meta(r).page <= p && meta(r).pageEnd >= p)) && (!q || (r.id + r.document + (r.chunk?.headingPath || "")).toLowerCase().includes(q)));
+    $("#cnt").textContent = `${sel.length} of ${rows.length}`;
+    $("#tb").innerHTML = sel.slice(0, 400).map((r) => `<tr class="chunk" data-id="${esc(r.id)}"><td>${esc(r.id)}</td><td><span class="pill">${esc(meta(r).kind)}</span></td><td>${meta(r).page}${meta(r).pageEnd !== meta(r).page ? "–" + meta(r).pageEnd : ""}</td><td>${esc(r.chunk?.printedPage ?? "")}</td><td>${esc(r.chunk?.headingPath ?? "")}</td><td class="t">${esc(r.document.slice(0, 200))}${r.document.length > 200 ? "…" : ""}</td></tr>`).join("");
+  };
+  ["q", "fk", "fp"].forEach((i) => ($("#" + i).oninput = draw)); draw();
+  $("#tb").onclick = (e) => { const tr = e.target.closest("tr.chunk"); if (tr) openChunk(tr.dataset.id); };
+}
+
+function openChunk(id) {
+  const r = rows.find((x) => x.id === id); if (!r) return;
+  const assets = manifest.assets.filter((a) => (r.chunk?.assetIds || []).includes(a.id) || a.chunkIds.includes(id));
+  const d = $("#detail"); d.style.display = "block";
+  d.innerHTML = `<button onclick="$('#detail').style.display='none'" style="float:right">Close ✕</button><h3>${esc(id)}</h3>
+  <p><span class="pill">${esc(meta(r).kind)}</span> PDF p. ${meta(r).page}${meta(r).pageEnd !== meta(r).page ? "–" + meta(r).pageEnd : ""}${r.chunk?.printedPage ? ` · printed p. ${esc(r.chunk.printedPage)}${r.chunk.printedPageEnd !== r.chunk.printedPage ? "–" + esc(r.chunk.printedPageEnd) : ""}` : ""}</p>
+  ${r.chunk?.headingPath ? `<p class="mute">${esc(r.chunk.headingPath)}</p>` : ""}
+  <h4>document (stored text)</h4><pre>${esc(r.document)}</pre>
+  <h4>Chroma metadata</h4><pre>${esc(JSON.stringify(r.chroma, null, 2))}</pre>
+  ${r.chunk ? `<h4>chunk record</h4><pre>${esc(JSON.stringify({ ...r.chunk, text: undefined }, null, 2))}</pre>` : ""}
+  ${assets.map((a) => `<h4>asset ${esc(a.id)}</h4><div class="mute">${esc(a.caption)}</div><img src="/assets/${cur.split("__")[0]}/${esc(a.file)}" alt="${esc(a.caption)}">`).join("")}`;
+}
+
+async function map() {
+  $("#main").innerHTML = `<p class="mute" id="mp">Computing 2-D PCA of the stored embeddings…</p><div class="filters"><label>Color by <select id="cb"><option value="kind">kind</option><option value="region">region</option><option value="page">page range</option></select></label></div><div class="legend" id="lg"></div><canvas id="cv"></canvas>`;
+  if (!proj) proj = await api("/api/projection?collection=" + encodeURIComponent(cur));
+  $("#mp").textContent = `${proj.length} vectors (${proj[0]?.dim ?? 0} dims) projected onto the first two principal components. Nearby points = similar meaning to the embedding model. Click a point to open the chunk.`;
+  const cv = $("#cv"), dpr = devicePixelRatio || 1; cv.width = cv.clientWidth * dpr; cv.height = cv.clientHeight * dpr;
+  const g = cv.getContext("2d"); g.scale(dpr, dpr);
+  const W = cv.clientWidth, H = cv.clientHeight, pad = 24;
+  const xs = proj.map((p) => p.x), ys = proj.map((p) => p.y);
+  const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+  const sx = (x) => pad + ((x - x0) / (x1 - x0 || 1)) * (W - 2 * pad), sy = (y) => H - pad - ((y - y0) / (y1 - y0 || 1)) * (H - 2 * pad);
+  let key = (p) => p.metadata.kind, cmap = {};
+  const draw = () => {
+    const k = $("#cb").value;
+    key = k === "kind" ? (p) => p.metadata.kind : k === "region" ? (p) => p.metadata.region || "(none)" : (p) => "p. " + Math.floor((p.metadata.page - 1) / 20) * 20 + "+";
+    cmap = {}; [...new Set(proj.map(key))].sort().forEach((v, i) => (cmap[v] = css(COLORS[i % 10])));
+    $("#lg").innerHTML = Object.entries(cmap).map(([v, c]) => `<span><span class="dot" style="background:${c}"></span>${esc(v)}</span>`).join("");
+    g.clearRect(0, 0, W, H);
+    proj.forEach((p) => { g.fillStyle = cmap[key(p)]; g.globalAlpha = 0.8; g.beginPath(); g.arc(sx(p.x), sy(p.y), 5, 0, 7); g.fill(); });
+  };
+  $("#cb").onchange = draw; draw();
+  const near = (e) => { const b = cv.getBoundingClientRect(), mx = e.clientX - b.left, my = e.clientY - b.top; let best = null, bd = 100; proj.forEach((p) => { const d = (sx(p.x) - mx) ** 2 + (sy(p.y) - my) ** 2; if (d < bd) { bd = d; best = p; } }); return best; };
+  cv.onmousemove = (e) => { const p = near(e), t = $("#tip"); if (!p) { t.style.display = "none"; return; } const r = rows.find((x) => x.id === p.id); t.style.display = "block"; t.style.left = e.clientX + 12 + "px"; t.style.top = e.clientY + 12 + "px"; t.innerHTML = `<b>${esc(p.id)}</b> · p. ${p.metadata.page}<br>${esc((r?.document || "").slice(0, 140))}…`; };
+  cv.onmouseleave = () => ($("#tip").style.display = "none");
+  cv.onclick = (e) => { const p = near(e); if (p) openChunk(p.id); };
+}
+
+function assets() {
+  $("#main").innerHTML = manifest.assets.length ? `<p class="mute">${manifest.assets.length} images saved for ${esc(cur.split("__")[0])} (decorative ones are saved but never linked to chunks).</p><div class="assets">${manifest.assets.map((a) => `<div class="card"><img loading="lazy" src="/assets/${cur.split("__")[0]}/${esc(a.file)}" alt="${esc(a.caption)}"><div><span class="pill">${esc(a.type)}</span> p. ${esc(a.printedPage)} (PDF ${a.page}) ${a.decorative ? '<span class="pill">decorative</span>' : ""}</div><div class="mute">${esc(a.caption)}</div><div class="mute">chunks: ${esc(a.chunkIds.join(", ") || "—")}</div></div>`).join("")}</div>` : '<p class="mute">No assets for this use case yet.</p>';
+}
+init();
+</script>
+</body>
+</html>

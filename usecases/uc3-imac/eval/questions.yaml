@@ -1,0 +1,90 @@
+# goldPages are 1-based PDF pages (= printed pages for this document), verified in build step 12.
+# Confirmed pages (spec value → verified): B1 7 → 7 · B2 10 → 2, 10 · B3 1, 4 → 1, 2, 4 · S1 2 → 2 · S2 1, 5, 11 → 1, 5, 11 · S3 12 → 12
+questions:
+  - id: B1
+    question: How much less energy does iMac use compared to the ENERGY STAR requirement?
+    expected: 58%
+    goldPages: [7]
+    evidence: 58 percent
+    type: basic
+    answerContains: ["58"]
+  - id: B2
+    question: What is the total carbon footprint, and how much comes from product use vs manufacturing?
+    expected: 346 kg CO2e; production 50%, product use 45%
+    goldPages: [2, 10]
+    evidence: 346 kg
+    type: basic
+    answerContains: ["346", "45%", "50%"]
+    answerExcludes: ["156", "173"]
+    note: "verified: '346 kg' is on PDF 10 (table) and PDF 2 (chart page)"
+  - id: B3
+    question: What material is the iMac stand made from, and what percentage is recycled?
+    expected: aluminum, 100% recycled
+    goldPages: [1, 2, 4]
+    evidence: aluminum
+    type: basic
+    answerContains: ["aluminum", "100%"]
+    note: "verified: 'recycled aluminum in the stand' on PDF 1, 2 and 4"
+  - id: S1
+    question: What was the baseline emissions figure, and how many kilograms did the reductions remove?
+    expected: 445 kg baseline, 99 kg removed, 346 kg final
+    goldPages: [2]
+    evidence: "445"
+    type: stress
+    answerContains: ["445", "99"]
+  - id: S2
+    question: What share of iMac manufacturing electricity comes from renewable sources, and what does the footnote say about how it's measured?
+    expected: over 20%; estimated by attributing supplier low-carbon electricity from the prior fiscal year to the carbon model
+    goldPages: [1, 5, 11]
+    evidence: "20"
+    type: stress
+    answerContains: ["20%", "prior fiscal year"]
+    note: "verified: 'Over 20%' on PDF 1 and 5; endnote 2 on PDF 11"
+  - id: S3
+    question: What is the iMac's power consumption in sleep mode at 115V?
+    expected: 0.57W
+    goldPages: [12]
+    evidence: 0.57W
+    type: stress
+    answerContains: ["0.57"]
+  - id: S4
+    question: Which iMac configuration is the 346 kg CO2e footprint actually based on?
+    expected: the table labels it iMac (two ports) 256GB, but endnote 10 says the life cycle assessment is based on iMac (two ports) with the 512GB storage configuration; the four-ports 512GB figure is 391 kg
+    goldPages: [10, 11]
+    evidence: 512GB storage configuration
+    type: stress
+    answerContains: ["256GB", "512GB"]
+    note: "the data inconsistency: the page 10 table says 256GB; endnote 10 (PDF 11, referenced only from the PDF 2 chart) says 512GB. A hit needs the page-10 table chunk to carry Note 10 (attached because the note starts with the table title)"
+  - id: S5
+    question: What is the total carbon footprint of the iMac with four ports and 512GB storage?
+    expected: 391 kg CO2e
+    goldPages: [10]
+    evidence: 391 kg
+    type: stress
+    answerContains: ["391"]
+  - id: S6
+    question: How much power does the iMac use in idle mode with the display on at 230V?
+    expected: 20.9W
+    goldPages: [12]
+    evidence: 20.9W
+    type: stress
+    answerContains: ["20.9"]
+  - id: S7
+    question: What is the product use share of emissions and what is the end-of-life share?
+    expected: product use 45%, end-of-life processing <1%
+    goldPages: [10]
+    evidence: Product use
+    type: stress
+    answerContains: ["45%", "<1%|less than 1"]
+  - id: S8
+    question: What baseline does Apple use to calculate the carbon reduction of more than 20 percent?
+    expected: a product-specific business-as-usual scenario (no clean electricity for manufacturing or product use, 2015 material carbon intensity baseline)
+    goldPages: [2, 11]
+    evidence: business-as-usual
+    type: stress
+    answerContains: ["business-as-usual"]
+  - id: R1
+    question: What is the carbon footprint of the iMac Pro?
+    expected: refusal
+    goldPages: []
+    type: refusal

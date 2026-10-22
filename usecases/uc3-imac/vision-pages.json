@@ -1,0 +1,18 @@
+{
+  "pages": [
+    { "page": 1, "printedPage": "1", "note": "cover call-outs in three columns, certification badges", "saveAsset": false },
+    {
+      "page": 2,
+      "printedPage": "2",
+      "note": "carbon emissions bar chart: 445 kg baseline, -99 kg reductions, 346 kg final",
+      "saveAsset": true
+    },
+    {
+      "page": 10,
+      "printedPage": "10",
+      "note": "greenhouse gas emissions and configuration tables (cross-check for table rebuild)",
+      "saveAsset": true
+    },
+    { "page": 12, "printedPage": "12", "note": "power consumption table, Off/Sleep/Idle x 100V/115V/230V (cross-check)", "saveAsset": true }
+  ]
+}

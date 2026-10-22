@@ -1,0 +1,61 @@
+# goldPages are 1-based PDF pages, verified in build step 12 against the extracted + repaired text.
+# Confirmed pages (spec value → verified): B1 96 → 96 · B2 109–111 → 109–111 · B3 19–20 → 19–20 · S1 92–93 → 92 ·
+# S2 96–98 → 96, 98 · S3 88–89 → 88, 89 · S4 100–101 → 99, 100
+questions:
+  - id: B1
+    question: What is the growth outlook for South Asia in this report?
+    expected: growth softens to 6.3 percent in 2026
+    goldPages: [96]
+    evidence: 6.3 percent
+    type: basic
+    answerContains: ["6.3"]
+    note: "verified: '6.3 percent' also appears on PDF 50, 76, 78 but in other contexts; the South Asia sentence is on 96"
+  - id: B2
+    question: What does Chapter 3 say about sovereign debt in developing economies?
+    expected: chapter summary
+    goldPages: [109, 110, 111]
+    type: basic
+    answerContains: ["40", "70", "11"]
+    note: "verified: Chapter 3 introduction runs 109–111 (divider on 107)"
+  - id: B3
+    question: According to the executive summary, what are the main risks to the global outlook?
+    expected: risks listed in the Executive Summary
+    goldPages: [19, 20]
+    type: basic
+    answerContains: ["risk"]
+    note: "verified: Executive Summary is PDF 19–20 (printed xvii–xviii)"
+  - id: S1
+    question: What growth is projected in 2026 for the region that includes Pakistan?
+    expected: 1.6 percent
+    goldPages: [92]
+    evidence: 1.6 percent
+    type: stress
+    answerContains: ["1.6"]
+    note: "verified: the Middle East, North Africa, Afghanistan, and Pakistan sentence is on PDF 92 only (93 has no '1.6 percent'; 47, 72, 100, 154 are other contexts)"
+  - id: S2
+    question: What is India's projected growth for fiscal year 2026/27?
+    expected: from the South Asia text/table (6.6 percent)
+    goldPages: [96, 98]
+    type: stress
+    answerContains: ["6.6"]
+    note: "verified: text on 96, Table 2.10 on 98"
+  - id: S3
+    question: What does the report say about Brazil?
+    expected: LAC section
+    goldPages: [88, 89]
+    evidence: Brazil
+    type: stress
+    answerContains: ["1.9"]
+    note: "verified: LAC text on 88–89 (90–91 are the forecast tables, 74 is the chapter overview)"
+  - id: S4
+    question: What is the outlook for SSA?
+    expected: SSA outlook (growth forecast to edge down to 4 percent in 2026)
+    goldPages: [99, 100]
+    type: stress
+    answerContains: ["4 percent|4%", "4.4"]
+    note: "verified: SSA Outlook text is on PDF 99–100, not 100–101"
+  - id: R1
+    question: What did the June 2030 edition forecast for global growth?
+    expected: refusal
+    goldPages: []
+    type: refusal

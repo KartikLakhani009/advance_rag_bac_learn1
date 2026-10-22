@@ -1,0 +1,42 @@
+# goldPages are 1-based PDF pages, verified in build step 12 by locating the evidence in the extracted text.
+# Confirmed pages (spec value → verified): B1 21 → 5, 21 · B2 9–10 → 4, 8, 10, 22 · B3 ? → 5, 14 · S1 5 → 5, 15, 19
+questions:
+  - id: B1
+    question: How many depository libraries did GPO staff visit in FY 2018?
+    expected: 166 libraries in 25 states
+    goldPages: [5, 21]
+    evidence: "166"
+    type: basic
+    answerContains: ["166"]
+    note: "verified: '166 depository libraries in 25 states' appears on PDF 5 and PDF 21"
+  - id: B2
+    question: What new digital system replaced FDsys, and when was it fully deployed?
+    expected: govinfo; full-scale deployment in FY 2018, FDsys retirement targeted for December 2018
+    goldPages: [4, 8, 10, 22]
+    evidence: govinfo
+    type: basic
+    answerContains: ["govinfo", "2018"]
+    answerExcludes: ["December 2017", "deployed in December", "deployed in Dec"]
+    note: "verified: govinfo + 'retirement in December 2018' on PDF 4, 8, 10, 22 (spec guess 9–10 was only partly right)"
+  - id: B3
+    question: How much did GPO procure in printing and information products in FY 2018 on behalf of federal agencies?
+    expected: more than $375 million worth of printing and other information products ($375.7 million of revenue from procured printing)
+    goldPages: [5, 14]
+    evidence: "375"
+    type: basic
+    answerContains: ["375 million"]
+    answerExcludes: ["procured approximately $375.7", "procured $375.7", "375.7 million worth", "375.7 million of printing"]
+    note: "verified: 'On behalf of our Federal agency partners, GPO procured more than $375 million worth of printing' on PDF 5; 'Revenues from procured printing $375.7 million' on PDF 14 (By the Numbers)"
+  - id: S1
+    question: How many copies of how many titles did GPO distribute to depository libraries in FY 2018?
+    expected: 802,834 copies of 4,211 titles
+    goldPages: [5, 15, 19]
+    evidence: "802,834"
+    type: stress
+    answerContains: ["802,834", "4,211"]
+    note: "verified: also stated on PDF 15 (By the Numbers) and PDF 19"
+  - id: R1
+    question: What was GPO's total revenue in FY 2020?
+    expected: refusal
+    goldPages: []
+    type: refusal
