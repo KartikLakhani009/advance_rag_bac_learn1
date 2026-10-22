@@ -159,4 +159,5 @@ reports/            generated eval reports (gitignored)   docs/  architecture + 
 
 Code conventions: use cases import the shared library as `@rag/core/src/…` (npm workspace link, no path aliases); every npm script entry point goes through `runCli` (expected failures are `UserError`s printed as one line, anything else prints the stack); environment is read only through the Zod schema in `config.ts`; `tsc` runs with `noUnusedLocals`, `noUnusedParameters` and `noImplicitOverride`.
 
+
 Licence note: `mupdf` is AGPL. Fine for this learning project; a closed product needs a commercial MuPDF licence.
