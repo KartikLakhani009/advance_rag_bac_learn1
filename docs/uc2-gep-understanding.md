@@ -131,7 +131,7 @@ _Measured with the APIs (7 scored questions, `npm run uc2:eval -- --ladder`, dev
 | 7    | + vision tables (parents)                       | 0.86  | 1.00  | 1.00  | 0.93 |                            |
 | 8    | + rerank (Voyage `rerank-2.5-lite`, `--rerank`) | 0.86  | 1.00  | 1.00  | 0.93 | measured, retrieval only   |
 
-**Step 8 (rerank) equals step 7** (hit@1 0.86, MRR 0.93): with 7 questions the gold passage is already in the top 5 and rank 1 for six of them, so rerank has nothing to improve here; only 5′ → 6 (parents) moves the metric. Rerank-on answers are not re-measured yet (Groq daily token cap). The first rerank attempt fell back to the plain order for 2 of 8 questions (429s, requests over the free-tier token limit); `rerank()` now sends only the best candidates that fit the budget.
+**Step 8 (rerank) equals step 7** (hit@1 0.86, MRR 0.93): with 7 questions the gold passage is already in the top 5 and rank 1 for six of them, so rerank has nothing to improve here; only 5′ → 6 (parents) moves the metric. The first rerank attempt fell back to the plain order for 2 of 8 questions (429s, requests over the free-tier token limit); `rerank()` now sends only the best candidates that fit the budget. **Rerank-on answers, now measured** (`reports/uc2-2026-10-26T07-33-12-ladder-rerank.md`): **6/7**, down from 7/7 — see the table below. Retrieval still finds the gold passage (rank 1), so again this is a **generation-side** regression, not a retrieval one.
 
 Steps 6–8 score ≤ 3 parent sections, not single chunks: not directly comparable with 1–5.
 
@@ -143,8 +143,9 @@ What earned its place on this document: **routing** is the big step (MRR 0.71 �
 | ---------------------------------------------------------------- | ------------- | ---------------------------------------------------------------------------------------------------- |
 | naive index (prompt v2)                                          | 5/7           | B2 (Chapter 3) and S1 (region with Pakistan) were refused: _I could not find this in the document._  |
 | final pipeline (prompt v3, `reports/uc2-2026-10-22T09-05-27.md`) | **7/7**       | every answer contains the expected figures; hit@1 0.71 → 0.86 after the parent swap, MRR 0.83 → 0.93 |
+| final pipeline + production rerank (`--rerank --ladder`, `reports/uc2-2026-10-26T07-33-12-ladder-rerank.md`) | **6/7** (regression) | B2 _FAIL_: answer gives “median EMDE debt increased by 20 percentage points of GDP between 2010 and 2024 … 114 basis points … 31 basis points” instead of the chapter's headline stat (40% → 70% of GDP, 6% → 11% of revenues, verified below). The retrieved chunk (rank 1, same page 109 paragraph) contains both the headline sentence and the 149bps/40bps figures the model actually cites — rerank changed which secondary passages sit alongside it, and the model reached for the wrong one. All other answers unchanged. |
 
-**B2 verification (the open item from the first run):** the figures in the answer were checked against the text on PDF 109: “Aggregate government debt in EMDEs has increased from less than 40 percent of GDP in 2010 to over 70 percent … the cost of servicing government debt has risen, from 6 percent of government revenues in 2010 to an estimated 11 percent in 2025.” The answer’s 40% → 70% and 6% → 11% are exact.
+**B2 verification (the open item from the first run):** the figures in the answer were checked against the text on PDF 109: “Aggregate government debt in EMDEs has increased from less than 40 percent of GDP in 2010 to over 70 percent … the cost of servicing government debt has risen, from 6 percent of government revenues in 2010 to an estimated 11 percent in 2025.” The answer’s 40% → 70% and 6% → 11% are exact — this is the no-rerank run's answer; the rerank-on run (row above) misses it.
 
 ## 9. Eval results
 
